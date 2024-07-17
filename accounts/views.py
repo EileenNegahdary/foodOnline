@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, request
 from .forms import UserForm
 from .models import User, UserProfile
+from vendor.models import Vendor
 from vendor.forms import VendorForm
 from django.contrib import messages, auth
 from .utils import *
@@ -147,6 +148,7 @@ def myAccount(request):
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def vendorDashboard(request):
+    
     return render(request, 'accounts/vendorDashboard.html')
 
 @login_required(login_url='login')
