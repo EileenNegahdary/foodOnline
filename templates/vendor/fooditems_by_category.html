@@ -21,6 +21,7 @@
                             <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
                             <br><br>
                             <h6>Category: <span class="text-success text-uppercase">{{ category }}</span></h6>
+                            <a href="{% url 'add_food' %}" class="btn btn-success float-right m-1"><i class="fa fa-plus" aria-hidden="true"></i>Add Food</a>
                             {% if fooditems %}
                             <table class="table table-hover table-borderless">
                                                     
@@ -33,7 +34,14 @@
                                         <a href=""><p class="mb-0 font-weight-bold">{{ fooditem }}</p>
                                         <small class="text-muted">{{ fooditem.price }}</small></a>
                                     </td>
-                                    <td><i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; <i class="fa fa-trash text-danger" aria-hidden="true"></i></td>
+                                    <td>
+                                        {% if fooditem.is_available %}
+                                            <span class="badge badge-success">available</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">not available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'edit_food' fooditem.id %}" style="color: unset;"><i class="fa fa-pencil" aria-hidden="true"></i></a> &nbsp; <a href="{% url 'delete_food' fooditem.id%}" onclick="return confirm('Are you sure you want to delete this food item?')"><i class="fa fa-trash text-danger" aria-hidden="true"></i></a></td>
                                   </tr>
                                 {% endfor %}
                                 </tbody>
@@ -41,7 +49,7 @@
 							{% else %}
                             <h5 class="text-center">No food items found.</h5>	                           
                             <div class="text-center">
-                                <a href="" class="btn btn-success"><i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Add Food</a>
+                                <a href="{% url 'add_food' %}" class="btn btn-success"><i class="fa fa-pencil" aria-hidden="true"></i> &nbsp; Add Food</a>
                             </div>
                             {% endif %}
                             
