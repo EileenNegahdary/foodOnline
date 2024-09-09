@@ -4,6 +4,7 @@ from django.contrib import messages
 
 from accounts.forms import UserInfoForm, UserProfileForm
 from accounts.models import UserProfile
+from orders.models import Order, OrderedFood
 
 
 @login_required(login_url='login')
@@ -30,3 +31,34 @@ def cprofile(request):
         'user_form': user_form,
     }
     return render(request, 'customer/cprofile.html', context)
+
+
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'customer/my_orders.html', context)
+
+
+
+def order_detail(request, order_number):
+    try:
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        ordered_food = OrderedFood.objects.filter(order=order)
+        subtotal = 0
+        for item in ordered_food:
+            subtotal += (item.price * item.quantity)
+
+        # tax_data = json.loads(order.tax_data)
+
+        context = {
+            'order': order,
+            'ordered_food': ordered_food,
+            'subtotal': subtotal,
+        }
+        return render(request, 'customer/order_detail.html', context)
+    except:
+        return redirect('customer')
+    
