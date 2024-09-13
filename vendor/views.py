@@ -11,6 +11,7 @@ from accounts.forms import UserProfileForm
 
 from menu.forms import CategoryForm, FoodItemForm
 from menu.models import Category, FoodItem
+from orders.models import Order, OrderedFood
 
 from .models import AvailableHour, Vendor
 from .forms import AvailableHourForm, VendorForm
@@ -229,3 +230,30 @@ def remove_available_hour(request, pk=None):
         
      
 
+def order_detail(request, order_number):
+    try:
+        order = Order.objects.get(order_number=order_number, is_ordered=True)
+        ordered_food = OrderedFood.objects.filter(order=order, fooditem__vendor=get_vendor(request))
+
+        context = {
+            'order': order,
+            'ordered_food': ordered_food,
+            'total': order.get_total_by_vendor(),
+        }
+
+        return render(request, 'vendor/order_detail.html', context)
+
+    except:
+        return redirect('vendor')
+    
+
+
+def my_orders(request):
+    vendor = Vendor.objects.get(user=request.user)
+    orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
+
+    context = {
+        'orders': orders,
+        'vendor': vendor,
+    }
+    return render(request, 'vendor/my_orders.html', context)

@@ -30,10 +30,11 @@
                                                     <div class="image-holder"><img src="{{ item.fooditem.image.url }}" alt=""></div>
                                                     <div class="text-holder">
                                                         <h6>{{ item.fooditem }}</h6>
-                                                        <!-- <span>{{ item.fooditem.description }}</span> -->
+                                                        <a href="{% url 'vendor_details' item.fooditem.vendor.vendor_slug %}" class="badge badge-warning">{{ item.fooditem.vendor }}</a>
                                                     </div>
                                                     <div class="price-holder">
                                                         <span class="price">£{{ item.fooditem.price }}</span>
+
                                                         <a href="#" class="decrement_cart" data-id="{{ item.fooditem.id }}" id="{{ item.id }}" data-url="{% url 'decrement_cart' item.fooditem.id %}" style="margin-right: 28px;"><i class="icon-minus text-color"></i></a>
                                                         <label id="qty-{{ item.fooditem.id }}">0</label>
                                                         <a href="#" class="add_to_cart" data-id="{{ item.fooditem.id }}" data-url="{% url 'add_to_cart' item.fooditem.id %}"><i class="icon-plus4 text-color"></i></a>

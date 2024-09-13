@@ -21,6 +21,7 @@ class Vendor(models.Model):
     
 
     def is_open(self):
+        print('or here in is_open')
         # get current day
         today_date = date.today()
         today = today_date.isoweekday()
@@ -36,10 +37,14 @@ class Vendor(models.Model):
         for hour in current_day_hours:            
             start = str(datetime.strptime(hour.from_hour, "%I:%M %p").time())
             end = str(datetime.strptime(hour.to_hour, "%I:%M %p").time())
+            print('is the error here before if?')
             if current_time > start and current_time < end:
+                print("or here in if")
                 is_open = True
+                break
             else:
                 is_open = False
+        
         
         return is_open
 

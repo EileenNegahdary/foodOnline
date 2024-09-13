@@ -5,13 +5,13 @@
 
 <!-- Main Section Start -->
 <div class="main-section">
-    {% include 'customer/cover.html' %}
+    {% include 'vendor/cover.html' %}
     <div class="page-section account-header buyer-logged-in">
         <div class="container">
             <div class="row">
                 <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
                     <!-- Load Sidebar Here -->
-                     {% include 'includes/c_sidebar.html' %}
+                     {% include 'includes/v_sidebar.html' %}
                 </div>
                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
                     <div class="user-dashboard loader-holder">
@@ -78,7 +78,7 @@
                                                             Subtotal
                                                             <span class="price float-right">
                                                                 <span class="currency">$</span>
-                                                                <span id="subtotal">{{ subtotal }}</span>
+                                                                <span id="subtotal">{{ total }}</span>
                                                             </span>
                                                         </li>
                                                         <li style="list-style-type: none;">
@@ -92,7 +92,7 @@
                                                             Total
                                                             <span class="price float-right">
                                                                 <span class="currency">$</span>
-                                                                <span id="total">{{ order.total}}</span>
+                                                                <span id="total">{{ total }}</span>
                                                             </span>
                                                         </li>
                                                     </ul>
@@ -114,6 +114,8 @@
                                 </div>
                             </div>
                             
+
+                            <h5 class="text-uppercase">Recent orders</h5>
                             
                         </div>
                     </div>

@@ -3,10 +3,12 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
+from django.contrib.sites.shortcuts import get_current_site
 import simplejson as json
 
 from marketplace.context_processors import get_cart_amounts
 from marketplace.models import Cart
+from menu.models import FoodItem
 from orders.utils import generate_order_number, generate_transaction_id
 from accounts.utils import send_notification_email
 
@@ -15,11 +17,34 @@ from .models import Order, OrderedFood, Payment
 
 @login_required(login_url='login')
 def place_order(request):
+    # quering the items in the cart
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
+    # if the count is equal or less than zero redirect to marketplace page bcs cart is empty
     cart_count = cart_items.count()
     if cart_count <= 0:
         return redirect('marketplace')
     
+    # the id of all the vendors from which fooditems have been added to cart
+    vendors_ids = []
+    for i in cart_items:
+        if i.fooditem.vendor.id not in vendors_ids:
+            vendors_ids.append(i.fooditem.vendor.id)
+
+    subtotal = 0
+    total_data = {}
+    k = {}
+    for i in cart_items:
+        fooditem = FoodItem.objects.get(pk=i.fooditem.id, vendor_id__in=vendors_ids)
+        v_id = fooditem.vendor.id
+        if v_id in k:
+            subtotal = k[v_id]
+            subtotal += (fooditem.price * i.quantity)
+            k[v_id] = subtotal
+        else:
+            subtotal = (fooditem.price * i.quantity)
+            k[v_id] = subtotal
+        total_data.update({fooditem.vendor.id: str(subtotal)})
+
     subtotal = get_cart_amounts(request)['subtotal']
     total_tax = get_cart_amounts(request)['tax']
     grand_total = get_cart_amounts(request)['grand_total']
@@ -41,10 +66,12 @@ def place_order(request):
             order.total_tax = total_tax
             # order.tax_data = json.dumps(tax_data)
             order.tax_data = 0
+            order.total_data = json.dumps(total_data)
             order.payment_method = request.POST['payment_method']
             order.save() 
             # order id/pk gets generated after saving
             order.order_number = generate_order_number(order.id)
+            order.vendors.add(*vendors_ids)
             order.save() 
             context = {
                 'order': order,
@@ -107,10 +134,19 @@ def payments(request):
         # send order confirmation email to the customer
         email_subject = 'Thank you for ordering from us'
         email_template = 'orders/order_confirmation_email.html'
+
+        ordered_food = OrderedFood.objects.filter(order=order)
+        customer_subtotal = 0
+        for item in ordered_food:
+            customer_subtotal += (item.price * item.quantity)
+            
         context = {
             'user': request.user,
             'order': order,
             'to_email': order.email,
+            'ordered_food': ordered_food,
+            'domain': get_current_site(request),
+            'customer_subtotal': customer_subtotal,
         }
 
         send_notification_email(email_subject, email_template, context)
