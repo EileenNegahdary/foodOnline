@@ -1,0 +1,149 @@
+{% extends 'base.html'%}
+{% load static %}
+
+{% block content %}
+
+<!-- Main Section Start -->
+<div class="main-section">
+    {% include 'customer/cover.html' %}
+    <div class="page-section account-header buyer-logged-in">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <!-- Load Sidebar Here -->
+                     {% include 'includes/c_sidebar.html' %}
+                </div>
+                <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <div class="user-dashboard loader-holder">
+                        <div class="user-holder">
+                            <div class="container">
+                                <div class="justify-content-center row">
+                                    <div class="col-md-12">
+                                        <div class="bg-white p-1 justify-content-center">
+                                            <img src="{% static 'logo/foodOnlineLogo.png' %}" alt="foodonline logo" width="500">
+                                            <br>
+                                            <br>
+                                            <h3>Please Share Your Review With Us</h3>
+                                            <br>
+                                            <div class="accordion accordion-flush py-5" id="accordionExample">
+                                                {% for item in ordered_foods %}
+                                                <div class="accordion-item">
+                                                  <h2 class="accordion-header">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                      <img src="{{ item.fooditem.image.url}}" alt="" width="60">
+                                                      <span class="px-4">{{ item.fooditem }}</span>
+                                                      <span class="px-4">${{ item.price }}</span>
+                                                      <span class="px-5">from {{ item.fooditem.vendor }}</span>
+                                                    </button>
+                                                  </h2>
+                                                  <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                                    <div class="accordion-body">
+                                                        <form action="#" method="POST" id="reviewForm{{ forloop.counter }}">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="order_number" value="{{ item.order.order_number }}">
+                                                            <div class="row">
+                                                                <div class="col-lg-6 col-md-6 col-sm-12">
+                                                                    Review Title:
+                                                                    <input type="text" class="form-control" name="subject" >
+                                                                </div>
+                                                                <div class="row align-items-center col-lg-4 col-md-4 justify-content-center">
+                                                                    <div class="rate">
+                                                                        <label for="rating10_{{ forloop.counter }}" title="5"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating10_{{ forloop.counter }}" value="5" required>
+                                                                        <label for="rating9_{{ forloop.counter }}" title="4.5" class="half"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating9_{{ forloop.counter }}" value="4.5" required>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating8_{{ forloop.counter }}" value="4" required><label for="rating8_{{ forloop.counter }}" title="4"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating7_{{ forloop.counter }}" value="3.5" required><label for="rating7_{{ forloop.counter }}" title="3.5" class="half"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating6_{{ forloop.counter }}" value="3" required><label for="rating6_{{ forloop.counter }}" title="3"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating5_{{ forloop.counter }}" value="2.5" required><label for="rating5_{{ forloop.counter }}" title="2.5" class="half"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating4_{{ forloop.counter }}" value="2" required><label for="rating4_{{ forloop.counter }}" title="2"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating3_{{ forloop.counter }}" value="1.5" required><label for="rating3_{{ forloop.counter }}" title="1.5" class="half"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating2_{{ forloop.counter }}" value="1" required><label for="rating2_{{ forloop.counter }}" title="1"></label>
+                                                                        <input type="radio" name="rating_{{ forloop.counter }}" id="rating1_{{ forloop.counter }}" value="0.5" required><label for="rating1_{{ forloop.counter }}" title="0.5" class="half"></label>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <br>
+                                                                <div class="mb-3">
+                                                                    Review :
+                                                                    <textarea class="form-control" name="review" rows="3" style="height: 100px;"></textarea>                                                                    
+                                                                </div>
+                                                                <br>
+                                                                <div class="col-lg-3">
+                                                                    <input type="submit" class="btn btn-primary" name="submit-review" id="{{ forloop.counter }}" data-url="{% url 'submit_review' item.fooditem.id %}">
+                                                                </div>
+                                                                
+                                                                
+                                                            </div>
+                                                        
+                                                        </form>
+
+
+                                                        
+                                                        <br>
+                                                        
+                                                    <span id="message{{ forloop.counter }}"></span>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                {% endfor %}
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Main Section End -->
+
+
+
+<script>
+    $(document).ready(function(){
+        $(document).on('click', 'input[name="submit-review"]', function(e){
+            e.preventDefault();
+
+            var id = $(this).attr('id')
+            console.log(id);
+            var form = $('form#reviewForm' + id)
+            var url = $(this).data('url');
+            // var form = $(this).closest('form');
+            // console.log(form);
+            var formData = form.serializeArray();
+
+            form.find('input[type="radio"]:checked').each(function() {
+                formData.push({name: 'rating', value: $(this).val()});
+            });
+            
+            console.log(url);
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $.param(formData),
+                success: function(response){
+                    if(response.status == 'login required') {
+                    swal.fire(response.message, '', 'info').then(function(e){
+                        window.location = '/login';
+                    })
+                    }else {
+                        $('#message'+id).html(response.message);
+                    }
+                }
+            })
+        })
+    })
+   
+</script>
+
+{% include 'includes/alerts.html' %}
+{% endblock %}

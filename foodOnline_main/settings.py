@@ -75,7 +75,8 @@ TEMPLATES = [
                 'accounts.context_processors.get_vendor',
                 'marketplace.context_processors.get_cart_counter',
                 'marketplace.context_processors.get_cart_amounts',
-                'accounts.context_processors.get_user_profile'
+                'accounts.context_processors.get_user_profile',
+                'accounts.context_processors.get_google_api',
             ],
         },
     },
@@ -166,3 +167,6 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'FoodOnline Market <pawscareconnect@gmail.com>'
+
+
+GOOGLE_API_KEY = 'AIzaSyAChJmbAeSE0v5GAnS6H1C0mW1uHCsoTns'

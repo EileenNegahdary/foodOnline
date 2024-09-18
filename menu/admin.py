@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from menu.models import Category, FoodItem
+from menu.models import Category, FoodItem, ReviewRating
 
 class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('category_name',)}
@@ -16,3 +16,4 @@ class FoodItemAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(FoodItem, FoodItemAdmin)
+admin.site.register(ReviewRating)

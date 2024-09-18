@@ -1,7 +1,7 @@
 from django import forms
 
 from accounts.validators import allow_only_images_validator
-from menu.models import Category, FoodItem
+from menu.models import Category, FoodItem, ReviewRating
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -13,3 +13,11 @@ class FoodItemForm(forms.ModelForm):
     class Meta:
         model = FoodItem
         fields = ['category', 'food_title', 'description', 'price', 'image', 'is_available']
+
+
+
+# Review and Rating forms
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = ReviewRating
+        fields = ['subject', 'review', 'rating', 'order_number']

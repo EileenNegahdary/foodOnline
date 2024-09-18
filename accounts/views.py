@@ -2,7 +2,7 @@ from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, request
 
-from orders.models import Order
+from orders.models import Order, OrderedFood
 from .forms import UserForm
 from .models import User, UserProfile
 from vendor.models import Vendor
@@ -182,11 +182,22 @@ def vendorDashboard(request):
 @login_required(login_url='login')
 @user_passes_test(check_role_customer)
 def custDashboard(request):
+    
     orders = Order.objects.filter(user=request.user, is_ordered=True)
+    ongoing_orders = orders.filter(status='Accepted')
+    # get completed orders and fetch ordered food for every order
+    completed_orders = orders.filter(status='Completed')
+    order_data = {}
+    for order in completed_orders:
+        ordered_foods = OrderedFood.objects.filter(order=order)
+        order_data[order] = ordered_foods
+        
     recent_orders = Order.objects.filter(user=request.user, is_ordered=True)[:5]
     context = {
         'orders': orders,
         'recent_orders': recent_orders,
+        'ongoing_orders': ongoing_orders,
+        'order_data': order_data,
         'orders_count': orders.count
     }
     return render(request, 'accounts/custDashboard.html', context)
