@@ -82,6 +82,8 @@ $(document).ready(function(){
 
     initAutocomplete();
 
+    
+
     // ADD TO CART
     $('.add_to_cart').on('click', function(e){
         e.preventDefault();

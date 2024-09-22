@@ -17,7 +17,7 @@
                             <div class="listing-sorting-holder">
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                        <h4>{{ vendor.count }} Restaurant's found</h4>
+                                        <h4 class="text-lowercase">{{ vendors_count }} Restaurant(s) found</h4>
                                     </div>
                                 </div>
                             </div>
@@ -31,7 +31,7 @@
                                             <figure>
                                                 <a href="#">
                                                     {% if vendor.user_profile.profile_picture %}
-                                                    <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-list wp-post-image" alt="">
+                                                    <img src="{{ vendor.user_profile.profile_picture.url }}" class="img-list wp-post-image" alt="" style="height: 90px;">
                                                     {% else %}
                                                     <img src="{% static 'images/default-profile.PNG' %}" class="img-list wp-post-image" alt="">
                                                     {%endif%}
@@ -64,6 +64,13 @@
                                             {% if vendor.user_profile.address %}
                                             <span><small>{{ vendor.user_profile.address }}</small></span>
                                             {% endif %}
+                                            <br>
+                                            
+                                            {% if source_location %}
+                                            <br>
+                                            <span class="badge bg-info"><small><b>{{ vendor.kms }}km away</b></small></span>
+                                            {% endif %}
+                                                
                                         </div>
                                         <div class="list-option">
 

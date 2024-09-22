@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Main Section Start -->
 <div class="main-section">
-        {% include 'includes/cover.html' %}
+        {% include 'vendor/cover.html' %}
     <div class="page-section account-header buyer-logged-in">
         <div class="container">
             <div class="row">
@@ -26,19 +26,19 @@
                             {% csrf_token %}
                                 <div class="form-fields-set">
                                     <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 py-2">
                                             <div class="text-holder">
                                                 <label>Category *</label>
                                                 {{ form.category }}
                                             </div>
                                         </div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 py-2">
                                             <div class="text-holder">
                                                 <label>Food Name *</label>
                                                 {{ form.food_title }}
                                             </div>
                                         </div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 py-2">
                                             <div class="text-holder">
                                                 <label>Description</label>
                                                 {{ form.description }}
@@ -56,7 +56,7 @@
                                                 {{ form.image }}
                                             </div>
                                         </div>
-                                        <div class="col-lg-6 col-md-6 col-sm-12">
+                                        <div class="col-lg-6 col-md-6 col-sm-12 py-4">
                                             <div class="text-holder">
                                                 <label>Available </label>
                                                 {{ form.is_available }}
@@ -71,7 +71,7 @@
                                         {% endfor %}
                                     {% endif %}
                                 {% endfor %}
-                                <button type="submit" class="btn btn-info"><i class="fa fa-check" aria-hidden="true"></i>Create</button>
+                                <button type="submit" class="btn btn-info py-1"><i class="fa fa-check" aria-hidden="true"></i>Create</button>
                             </form>
                             
                         </div>

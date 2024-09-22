@@ -95,3 +95,8 @@ input:checked + label:hover, input:checked ~ label:hover, input:checked ~ label:
 label:hover ~ input:checked ~ label{
     color: #cc9000;
 }
+
+
+.main-search.fancy .field-holder input[type="text"] {
+    color: #000000;
+}

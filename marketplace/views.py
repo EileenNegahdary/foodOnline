@@ -1,13 +1,15 @@
 from datetime import date
 from django.shortcuts import get_object_or_404, redirect, render
-from django.db.models import Prefetch
-from django.http import JsonResponse
+from django.db.models import Prefetch, Q
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
 from accounts.models import UserProfile
 from orders.forms import OrderForm
-
 
 from .models import Cart
 from .context_processors import get_cart_amounts, get_cart_counter
@@ -112,7 +114,6 @@ def decrement_cart(request, food_id):
         return JsonResponse({'status': 'login required', 'message': 'You have to login!'})
     
 
-
 @login_required(login_url = 'login')
 def cart(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('-created_at')
@@ -139,7 +140,7 @@ def delete_cart(request, cart_id):
             return JsonResponse({'status': 'failure', 'message': 'Invalid request!'})
         
 
-login_required(login_url='login')
+@login_required(login_url='login')
 def checkout(request):
     cart_items = Cart.objects.filter(user=request.user).order_by('created_at')
     cart_count = cart_items.count()
@@ -165,3 +166,35 @@ def checkout(request):
         'cart_items': cart_items,
     }
     return render(request, 'marketplace/checkout.html', context)
+
+
+def search(request):
+    if 'address' not in request.GET:
+        return redirect('marketplace')
+    else:
+        address = request.GET['address']
+        latitude = request.GET['lat']
+        longitude = request.GET['lng']
+        radius = request.GET['radius']
+        keyword = request.GET['keyword']
+
+        # get vendor ids that have the food item user is looking for
+        fetch_vendors_by_fooditems = FoodItem.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+        
+        vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
+        if latitude and longitude and radius:
+            pnt = GEOSGeometry('POINT(%s %s)' % (longitude, latitude))
+
+            vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True), 
+            user_profile__location__distance_lte=(pnt, D(km=radius))
+            ).annotate(distance=Distance("user_profile__location", pnt)).order_by("distance")
+
+            for v in vendors:
+                v.kms = round(v.distance.km, 1)
+        context = {
+            'vendors': vendors,
+            'vendors_count': vendors.count(),
+            'source_location': address,
+        }
+
+        return render(request, 'marketplace/listings.html', context)

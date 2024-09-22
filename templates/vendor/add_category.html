@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Main Section Start -->
 <div class="main-section">
-        {% include 'includes/cover.html' %}
+        {% include 'vendor/cover.html' %}
     <div class="page-section account-header buyer-logged-in">
         <div class="container">
             <div class="row">
@@ -16,23 +16,24 @@
                 <div class="col-lg-9 col-md-9 col-sm-12 col-xs-12">
                     <div class="user-dashboard loader-holder">
                         <div class="user-holder">
+                            <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
+                            <br>
+                            <br>
                             <h5 class="text-uppercase">Build Food Menu</h5>
                             <hr>
-                            <button class="btn btn-secondary" onclick="history.back()"><i class="fa fa-angle-left" aria-hidden="true"></i> Back</button>
-
                             <h6>Add New Category</h6>                            
 	                        <!-- form start -->
                             <form action="{% url 'add_category' %}" method="POST">
                             {% csrf_token %}
                                 <div class="form-fields-set">
                                     <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 px-2">
                                             <div class="text-holder">
                                                 <label>Category Name *</label>
                                                 {{ form.category_name }}
                                             </div>
                                         </div>
-                                        <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <div class="col-lg-12 col-md-12 col-sm-12 px-2">
                                             <div class="text-holder">
                                                 <label>Description</label>
                                                 {{ form.description }}

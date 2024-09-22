@@ -21,6 +21,8 @@ from .utils import get_vendor
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def vendor_profile(request):
+    print('here?')
+    print(request.method)
     profile = get_object_or_404(UserProfile, user=request.user)
     vendor = get_object_or_404(Vendor, user=request.user)
 
@@ -80,8 +82,9 @@ def add_category(request):
             category_name = form.cleaned_data['category_name']
             category = form.save(commit=False)
             category.vendor = get_vendor(request)
-            category.slug = slugify(category_name)
-            form.save()
+            category.save()
+            category.slug = slugify(category_name)+'-'+str(category.id)
+            category.save()
             messages.success(request, 'Category added successfully!')
             return redirect('menu_builder')
         
@@ -132,11 +135,15 @@ def add_food(request):
     if request.method  == 'POST':
         form = FoodItemForm(request.POST, request.FILES)
         if form.is_valid():
+            print('hello')
             food_title = form.cleaned_data['food_title']
             food_item = form.save(commit=False)
-            food_item.vendor = get_vendor(request)
-            food_item.slug = slugify(food_title)
-            form.save()
+            food_item.vendor = get_vendor(request)            
+            food_item.save()
+            print('food item id is ', food_item.id)
+            print('slug is', slugify(food_title)+'-'+str(food_item.id))
+            food_item.slug = slugify(food_title)+'-'+str(food_item.id)
+            food_item.save()
             messages.success(request, 'Food Item added successfully!')
             return redirect('fooditems_by_category', food_item.category.id)
 
