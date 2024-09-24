@@ -7,6 +7,7 @@ from django.contrib.gis.db.models.functions import Distance
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 
 from accounts.models import UserProfile
 from orders.forms import OrderForm
@@ -18,9 +19,13 @@ from vendor.models import AvailableHour, Vendor
 
 def marketplace(request):
     vendors = Vendor.objects.filter(is_approved=True, user__is_active=True)
+    paginator = Paginator(vendors, 4)
+    page = request.GET.get('page')
+    paged_vendors = paginator.get_page(page)
 
     context = {
-        'vendors': vendors,
+        'vendors': paged_vendors,
+        'vendors_count': vendors.count(),
     }
     return render(request, 'marketplace/listings.html', context)
 
@@ -224,7 +229,7 @@ def search(request):
         keyword = request.GET['keyword']
 
         # get vendor ids that have the food item user is looking for
-        fetch_vendors_by_fooditems = FoodItem.objects.filter(food_title__icontains=keyword, is_available=True).values_list('vendor', flat=True)
+        fetch_vendors_by_fooditems = FoodItem.objects.filter(Q(food_title__icontains=keyword) | Q(description__icontains=keyword), is_available=True).values_list('vendor', flat=True)
         
         vendors = Vendor.objects.filter(Q(id__in=fetch_vendors_by_fooditems) | Q(vendor_name__icontains=keyword, is_approved=True, user__is_active=True))
         if latitude and longitude and radius:
