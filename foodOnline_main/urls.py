@@ -22,7 +22,8 @@ from django.conf.urls.static import static
 from marketplace import views as MarketplaceViews
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
+    path('secure-login/', admin.site.urls),
     path('', views.home, name='home'),
     path('', include('accounts.urls')),
 

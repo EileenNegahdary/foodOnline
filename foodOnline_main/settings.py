@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
 
     'accounts',
     'vendor',
@@ -46,6 +45,8 @@ INSTALLED_APPS = [
     'marketplace',
     'customers',
     'orders',
+    'django.contrib.gis',
+    'admin_honeypot',
 ]
 
 MIDDLEWARE = [
@@ -57,8 +58,14 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'orders.request_object.RequestobjectMiddleware', # custom middleware created to access the request object in models.py
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
     
 ]
+
+SESSION_EXPIRE_SECONDS = 1200  # 1 hour
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_TIMEOUT_REDIRECT = '/login/'
+
 
 ROOT_URLCONF = 'foodOnline_main.urls'
 
