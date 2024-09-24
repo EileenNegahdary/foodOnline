@@ -13,7 +13,7 @@ from orders.forms import OrderForm
 
 from .models import Cart
 from .context_processors import get_cart_amounts, get_cart_counter
-from menu.models import Category, FoodItem
+from menu.models import Category, FoodItem, ReviewRating
 from vendor.models import AvailableHour, Vendor
 
 def marketplace(request):
@@ -30,10 +30,18 @@ def vendor_details(request, vendor_slug):
     categories = Category.objects.filter(vendor=vendor).prefetch_related(
         Prefetch(
             'fooditems',
-            queryset = FoodItem.objects.filter(is_available=True)
+            queryset = FoodItem.objects.filter(is_available=True).prefetch_related(
+            'reviewrating_set')  # Prefetch reviews
         )
     )
-
+    # for category in categories:
+    #     print(f"Category: {category.category_name}")
+    #     for fooditem in category.fooditems.all():
+    #         print(f"FoodItem: {fooditem.food_title}")
+    #         for review in fooditem.reviewrating_set.all():
+    #             print(f"Review by {review.user}: Rating: {review.rating}, Review: {review.review}")
+    
+    
     available_hours = AvailableHour.objects.filter(vendor=vendor).order_by('day', '-from_hour')
 
     # get current day
@@ -56,6 +64,43 @@ def vendor_details(request, vendor_slug):
     }
     return render(request, 'marketplace/vendor_details.html', context)
 
+
+def fooditem_details(request, food_id):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            fooditem = FoodItem.objects.get(id=food_id)
+            print("average", fooditem.averageRating())
+            # Get reviews for this food item
+            reviews = ReviewRating.objects.filter(fooditem=fooditem, status=True).order_by('-created_at')
+            # Build the response data
+            reviews_data = []
+            for review in reviews:
+                user_profile = UserProfile.objects.get(user=review.user)
+                reviews_data.append({
+                    'profile_picture': user_profile.profile_picture.url,
+                    'username': review.user.full_name(),
+                    'rating': review.rating,
+                    'subject': review.subject,
+                    'review': review.review,
+                    'date': review.created_at,
+                })
+
+            data = {
+            'food_image': fooditem.image.url,
+            'food_title': fooditem.food_title,
+            'description': fooditem.description,
+            'average_rating': round(fooditem.averageRating(), 1),
+            'review_count': fooditem.countReview(),
+            'price': str(fooditem.price),  # Convert Decimal to string for JSON
+            'reviews': reviews_data,
+            }
+            return JsonResponse({'status': 'success', 'data': data})
+
+        except:
+            return JsonResponse({'status': 'failed', 'message': 'Fooditem does not exist'})
+    
+    else:
+        return JsonResponse({'status': 'failed', 'message': 'Invalid request'})
 
 def add_to_cart(request, food_id):
     if request.user.is_authenticated:

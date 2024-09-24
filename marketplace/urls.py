@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.marketplace, name='marketplace'),
     path('<slug:vendor_slug>/', views.vendor_details, name='vendor_details'),
+    path('fooditem-details/<int:food_id>/', views.fooditem_details, name='fooditem_details'),
     # ADD ITEM TO CART
     path('add_to_cart/<int:food_id>/', views.add_to_cart, name='add_to_cart'),
     # DECREMENT CART ITEM

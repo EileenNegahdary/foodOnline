@@ -30,6 +30,18 @@
                                     <p>{{ vendor.user_profile.address }}</p>
                                     {% endif %}
                                 </div>
+                                <div class="rating-stars fw-bold">
+                                    <span>
+                                        <i class="fa fa-star{% if vendor.average_rating < 0.5 %}-o{% elif vendor.average_rating < 1 %}-half-o{% endif %}"></i>
+                                        <i class="fa fa-star{% if vendor.average_rating < 1.5 %}-o{% elif vendor.average_rating < 2 %}-half-o{% endif %}"></i>
+                                        <i class="fa fa-star{% if vendor.average_rating < 2.5 %}-o{% elif vendor.average_rating < 3 %}-half-o{% endif %}"></i>
+                                        <i class="fa fa-star{% if vendor.average_rating < 3.5 %}-o{% elif vendor.average_rating < 4 %}-half-o{% endif %}"></i>
+                                        <i class="fa fa-star{% if vendor.average_rating < 4.5 %}-o{% elif vendor.average_rating < 5 %}-half-o{% endif %}"></i>
+                                    </span>
+                                </div>
+                                {% if vendor.total_reviews %}
+                                <span class="reviews">({{ vendor.total_reviews }}) Reviews</span>
+                                {% endif %}
                             </div>
                         </div>
                         
@@ -108,8 +120,23 @@
                                             <li>
                                                 <div class="image-holder"><img src="{{ food.image.url }}" alt=""></div>
                                                 <div class="text-holder">
-                                                    <h6>{{ food }}</h6>
-                                                    <span>{{ food.description }}</span>
+                                                    <h6 class="fooditem-details" data-url="{% url 'fooditem_details' food.id %}" data-id="{{ food.id }}" data-bs-toggle="modal" data-bs-target="#exampleModal">{{ food }}</h6>
+                                                    <div class="rating-stars">
+                                                        <span>
+                                                            <i class="fa fa-star{% if food.averageRating < 0.5 %}-o{% elif food.averageRating < 1 %}-half-o{% endif %}"></i>
+                                                            <i class="fa fa-star{% if food.averageRating < 1.5 %}-o{% elif food.averageRating < 2 %}-half-o{% endif %}"></i>
+                                                            <i class="fa fa-star{% if food.averageRating < 2.5 %}-o{% elif food.averageRating < 3 %}-half-o{% endif %}"></i>
+                                                            <i class="fa fa-star{% if food.averageRating < 3.5 %}-o{% elif food.averageRating < 4 %}-half-o{% endif %}"></i>
+                                                            <i class="fa fa-star{% if food.averageRating < 4.5 %}-o{% elif food.averageRating < 5 %}-half-o{% endif %}"></i>
+
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {% if food.countReview %}
+                                                    <span>{{food.countReview}} review{% if food.countReview > 1%}s{% endif %}</span>
+                                                    {% endif %}
+                                                        
+                                                    
                                                 </div>
                                                 <div class="price-holder">
                                                     <span class="price">£{{ food.price }}</span>
@@ -141,5 +168,178 @@
     </div>
 </div>
 <!-- Main Section End -->
- {% endblock content %}
+ <!-- Modal -->
+<!-- Modal Structure -->
+<div class="modal fade" id="foodItemModal" tabindex="-1" role="dialog" aria-labelledby="foodItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header justify-content-center">
+            <h5 class="modal-title" id="foodItemModalLabel">Food Item Details</h5>     
+        </div>
+        <div class="modal-body">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3">
+                        <img src="" id="modalImage" alt="" width="80px">
+                    </div>
+                    <div class="d-flex flex-column py-1 col-lg-5 col-md-5">
+                        <span><b id="modalFoodTitle"></b></span>
+                        <span><small id="modalFoodPrice"></small></span>
+                    </div>
+                    <div class="rating-stars d-flex flex-column justify-content-center align-items-end col-lg-3 col-md-3">
+                        <p><span id="modalAverageRating"></span> <i class="fa fa-star" aria-hidden="true"></i></p>
+                    </div>
+                </div>
+                
+                <p id="modalFoodDescription"></p>
+                <p class="fw-bold"><span id="modalReviewCount"></span> Review(s) :</p>
+                    
+                <div class="list-group list-group-flush" id="reviewList">
+                    <!-- Reviews will be loaded here -->
+                                          
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+
+
+<script>
+    $(document).ready(function() {
+        // Event listener for when a food item is clicked
+        $('.fooditem-details').on('click', function() {
+            var food_id = $(this).data('id');
+            var url = $(this).data('url');
+            
+            // Make AJAX request to get food item details
+            $.ajax({
+                type: 'GET',
+                url: url,  // The URL to fetch data                
+                success: function(response) {
+                    if (response.status == 'failure') {
+                        swal.fire(response.message, '', 'info')
+                    }else{
+                        // Populate the modal with data
+                        $('#modalImage').attr("src", response.data.food_image);
+                        $('#modalFoodTitle').text(response.data.food_title);
+                        $('#modalFoodDescription').text(response.data.description);
+                        $('#modalFoodPrice').text('$'+response.data.price);
+                        $('#modalAverageRating').text(response.data.average_rating);
+                        $('#modalReviewCount').text(response.data.review_count);
+                        
+                        // Clear old reviews
+                        $('#reviewList').empty();
+                        
+                        // Append new reviews to the modal
+                        if (response.data.reviews.length > 0) {
+                            response.data.reviews.forEach(function(review) {
+                                // Create the outer div tag
+                                    var listItem = $('<div>', {
+                                        class: 'list-group-item list-group-item-action w-100 row gap-3 py-3',
+                                    });
+                                    // create the rows
+                                    var first_row = $('<div>', {
+                                        class: 'd-flex gap-2 w-100 justify-content-between'
+                                    });
+
+                                    var second_row = $('<div>', {
+                                        class: 'd-flex gap-2 w-100 pt-3 justify-content-between'
+                                    });
+
+                                    // Create the image element
+                                    var image = $('<img>', {
+                                        src: review.profile_picture, // Placeholder image
+                                        alt: 'User Image',
+                                        width: 32,
+                                        height: 32,
+                                        class: 'rounded-circle flex-shrink-0 mt-1',
+                                    });
+
+                                    var username = $('<small>', { class: 'mb-0', text: review.username});
+                                    var heading = $('<h6>', { class: 'mb-0', text: review.subject });
+                                    var content = $('<p>', { class: 'mb-0 opacity-75', text: review.review });
+
+                                    // Format the date to a more readable form (optional)
+                                    var reviewDate = new Date(review.date);
+                                    var formattedDate = reviewDate.toLocaleDateString('en-US', {
+                                        year: 'numeric', month: 'short', day: 'numeric'
+                                    });
+
+                                    // Create the paragraph containing rating and star                                   
+                                    var rating = generateStars(review.rating);
+                                    var par = $('<div>', { class: 'rating-stars'});
+
+                                    // Append the rating span to the <p>
+                                    par.append(rating);
+
+                                    var dateElement = $('<small>', { class: 'text-muted align-self-center text-nowrap', text: formattedDate });
+                                    
+
+                                    // Create the inner div to hold both sides
+                                    var innerDiv1 = $('<div>', { class: 'd-flex gap-2 w-100 justify-content-between' });
+                                    var innerDiv3 = $('<div>')
+                                    innerDiv3.append(username);
+                                    innerDiv3.append(par)
+                                    innerDiv1.append(innerDiv3);
+                                    innerDiv1.append(dateElement)
+
+                                    first_row.append(image);
+                                    first_row.append(innerDiv1);
+                                    // second_row.append(dateElement);
+
+                                    var innerDiv2 = $('<div>', { class: 'd-flex flex-column gap-2' });
+                                    innerDiv2.append(heading);
+                                    innerDiv2.append(content);
+
+                                    second_row.append(innerDiv2);
+                                    
+
+                                    listItem.append(first_row);
+                                    listItem.append(second_row);
+
+                                    // Append the list item to the reviewList div
+                                    $('#reviewList').append(listItem);
+                                });
+                                
+                        } else {
+                            $('#reviewList').append('<p>No reviews yet.</p>');
+                        }
+                        
+                        // Show the modal
+                        $('#foodItemModal').modal('show');
+                    }
+                }
+            });
+            
+            
+        });
+
+    function generateStars(rating){
+        var stars = $('<span>');
+        
+        // loop to add full stars
+        for(var i=1; i<= Math.floor(rating); i++){
+            stars.append('<i class="fa fa-star" aria-hidden="true"></i>');
+        }
+
+        // add a half star if necessary
+        if (rating % 1 !== 0) {
+            stars.append('<i class="fa fa-star-half-o" aria-hidden="true"></i>');
+        }
+        for(var i=0; i<Math.floor(5-rating); i++){
+            stars.append('<i class="fa fa-star-o" aria-hidden="true"></i>');
+        }
+        return stars;
+    }
+    });
+</script>
+
+{% endblock content %}
     

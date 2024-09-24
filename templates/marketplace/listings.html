@@ -47,10 +47,19 @@
                                         </div>
                                         <div class="text-holder">
                                             <div class="list-rating">
-                                                <div class="rating-star">
-                                                    <span class="rating-box" style="width: 100%;"></span>
+                                                <div class="rating-stars">
+                                                    <i class="fa fa-star{% if vendor.average_rating < 0.5 %}-o{% elif vendor.average_rating < 1 %}-half-o{% endif %}"></i>
+                                                    <i class="fa fa-star{% if vendor.average_rating < 1.5 %}-o{% elif vendor.average_rating < 2 %}-half-o{% endif %}"></i>
+                                                    <i class="fa fa-star{% if vendor.average_rating < 2.5 %}-o{% elif vendor.average_rating < 3 %}-half-o{% endif %}"></i>
+                                                    <i class="fa fa-star{% if vendor.average_rating < 3.5 %}-o{% elif vendor.average_rating < 4 %}-half-o{% endif %}"></i>
+                                                    <i class="fa fa-star{% if vendor.average_rating < 4.5 %}-o{% elif vendor.average_rating < 5 %}-half-o{% endif %}"></i>
+
                                                 </div>
-                                                <span class="reviews">(1)</span>
+                                                
+                                                {% if vendor.total_reviews %}
+                                                <span class="reviews">({{ vendor.total_reviews }}) reviews</span>
+                                                {% endif %}
+                                                    
                                             </div>
                                             <div class="post-title">
                                                 <h5>

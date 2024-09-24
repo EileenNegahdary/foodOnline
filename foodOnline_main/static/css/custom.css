@@ -100,3 +100,7 @@ label:hover ~ input:checked ~ label{
 .main-search.fancy .field-holder input[type="text"] {
     color: #000000;
 }
+
+.rating-stars i{
+    color: #ffb503 !important; 
+}

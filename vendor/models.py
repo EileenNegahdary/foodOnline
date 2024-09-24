@@ -1,5 +1,6 @@
 from datetime import date, datetime, time
 from django.db import models
+from django.db.models import Avg
 from django.utils import timezone
 import pytz
 from accounts.models import User, UserProfile 
@@ -19,6 +20,26 @@ class Vendor(models.Model):
     def __str__(self):
         return self.vendor_name
     
+    def average_rating(self):
+        # Use a Subquery to calculate the average rating for food items associated with the vendor
+        from menu.models import FoodItem, ReviewRating  # Avoid circular imports by placing the import here
+        
+        food_items = FoodItem.objects.filter(vendor=self)
+        reviews = ReviewRating.objects.filter(fooditem__in=food_items, status=True).aggregate(average=Avg('rating'))
+        
+        avg = reviews['average'] if reviews['average'] is not None else 0
+        return round(avg, 1)
+    
+    def total_reviews(self):
+        from menu.models import ReviewRating, FoodItem  # Avoid circular import
+        
+        # Get all food items for this vendor
+        food_items = FoodItem.objects.filter(vendor=self)
+        
+        # Count the reviews for the vendor's food items
+        review_count = ReviewRating.objects.filter(fooditem__in=food_items, status=True).count()
+        
+        return review_count
 
     def is_open(self):
         print('or here in is_open')

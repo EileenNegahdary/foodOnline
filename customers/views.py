@@ -86,6 +86,7 @@ def rate(request, order_number):
     }
     return render(request, 'customer/rate.html', context)
 
+
 def submit_review(request, fooditem_id):
     print(fooditem_id)
     if request.user.is_authenticated:
@@ -139,24 +140,3 @@ def submit_review(request, fooditem_id):
     else:
         return JsonResponse({'status': 'login required', 'message': 'You have to login!'})
     
-
-    
-
-
-
-
-# def get_review_form(request, order_number):
-#     if request.user.is_authenticated:
-#         # check if the request is made with ajax
-#         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-#             # check if fooditem exists
-#             try:
-#                 order = Order.objects.get(order_number=order_number)
-#                 ordered_foods = OrderedFood.objects.filter(order=order)
-#             except:
-#                 return JsonResponse({'status': 'failed', 'message': 'Order Not Found'})
-#         else:
-#             return JsonResponse({'status': 'failed', 'message': 'Invalid request'})
-
-#     else:
-#         return JsonResponse({'status': 'login required', 'message': 'You have to login!'})
