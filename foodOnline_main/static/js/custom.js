@@ -214,7 +214,17 @@ $(document).ready(function(){
 
     //add hour functionality in available hours in vendor panel
     $('.add_hour').on('click', function(e){
-        e.preventDefault();
+        e.preventDefault(); // Prevent the button's default behavior
+
+        // Check if the day is set as closed
+        var is_closed = $("input[name='is_closed']").is(':checked');
+
+        if (is_closed) {
+            var conf = confirm('If you set the day as closed, all the other specified hours for the day will be deleted!\nClick "OK" to continue.');
+            if (!conf) {
+                return; // Exit if the user cancels
+            }
+        }
 
         var day = document.getElementById('id_day').value
         var from_hour = document.getElementById('id_from_hour').value
@@ -247,8 +257,11 @@ $(document).ready(function(){
                 success: function(response){
                     if (response.status == 'success') {
                         if (response.is_closed == 'Closed') {
+                            console.log('the day ' + response.day);
+                            $('.'+response.day).remove();
                             html = '<tr id="hour-'+response.id+'"><td><b>'+response.day+'</b></td><td>Closed</td><td><a href="" class="remove_hour" data-url="/vendor/available-hours/remove/'+response.id+'/">Remove</a></td></tr>'
                         } else {
+                            console.log('the day '+ response.day);
                             html = '<tr id="hour-'+response.id+'"><td><b>'+response.day+'</b></td><td>'+response.from_hour+' - '+response.to_hour+'</td><td><a href="" class="remove_hour" data-url="/vendor/available-hours/remove/'+response.id+'/">Remove</a></td></tr>'
                         }
                         

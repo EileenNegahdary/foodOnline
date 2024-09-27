@@ -42,12 +42,15 @@ class Vendor(models.Model):
         return review_count
 
     def is_open(self):
-        print('or here in is_open')
         # get current day
         today_date = date.today()
         today = today_date.isoweekday()
         
         current_day_hours = AvailableHour.objects.filter(vendor=self, day=today)
+
+        # If there are no available hours for the day, return False (closed)
+        if not current_day_hours.exists():
+            return False
         
         # specify the timezone for Iran
         iran_timezone = pytz.timezone('Asia/Tehran')
@@ -55,18 +58,23 @@ class Vendor(models.Model):
         current_time = timezone.now().astimezone(iran_timezone).strftime("%H:%M:%S")
 
         is_open = None
-        for hour in current_day_hours:            
+        
+        for hour in current_day_hours:
+            if hour.is_closed:
+                is_open = False
+                break            
             start = str(datetime.strptime(hour.from_hour, "%I:%M %p").time())
             end = str(datetime.strptime(hour.to_hour, "%I:%M %p").time())
-            print('is the error here before if?')
-            if current_time > start and current_time < end:
-                print("or here in if")
+            print(start, end)
+            # Normal case, same day open-close
+            if start <= current_time <= end:
                 is_open = True
                 break
             else:
                 is_open = False
+                break
         
-        
+
         return is_open
 
     def save(self, *args, **kwargs):
@@ -111,7 +119,7 @@ class AvailableHour(models.Model):
 
 
     class Meta:
-        ordering = ('day', '-from_hour')
+        ordering = ('day', 'from_hour')
         unique_together = ('vendor', 'day', 'from_hour', 'to_hour')
 
 

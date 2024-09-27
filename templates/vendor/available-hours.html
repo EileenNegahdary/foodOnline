@@ -25,8 +25,8 @@
                             <table class="table available-hours" style="width: 500px; border: none !important;">
                                 <tbody>
                                     {% for hour in available_hours %}
-                                        <tr id="hour-{{ hour.id }}">
-                                            <td><b>{{ hour }}</b></td>
+                                        <tr id="hour-{{ hour.id }}" class="{{hour}}">
+                                            <td ><b>{{ hour }}</b></td>
                                             <td>
                                             {% if hour.is_closed %}
                                                 Closed
@@ -59,7 +59,7 @@
                                     </div >
                                     <div class="col-md-2">
                                         <input type="hidden" value="{% url 'add_available_hours' %}" id="add_hour_url">
-                                        <button class="btn btn-success add_hour">Add Hour</button>
+                                        <button type="button" class="btn btn-success add_hour">Add Hour</button>
                                     </div>
 
                                 </div>
@@ -75,6 +75,7 @@
     </div>
 </div>
 <!-- Main Section End -->
+
 
 {% include 'includes/alerts.html' %}
 

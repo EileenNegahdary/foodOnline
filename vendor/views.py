@@ -1,4 +1,6 @@
+from datetime import datetime
 from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, request, HttpResponse
 from django.contrib import messages
@@ -21,8 +23,6 @@ from .utils import get_vendor
 @login_required(login_url='login')
 @user_passes_test(check_role_vendor)
 def vendor_profile(request):
-    print('here?')
-    print(request.method)
     profile = get_object_or_404(UserProfile, user=request.user)
     vendor = get_object_or_404(Vendor, user=request.user)
 
@@ -205,26 +205,86 @@ def available_hours(request):
 def add_available_hours(request):
     if request.user.is_authenticated:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
-            day = request.POST.get('day')
+            day = int(request.POST.get('day'))
             from_hour = request.POST.get('from_hour')
             to_hour = request.POST.get('to_hour')
             is_closed = request.POST.get('is_closed')
-            try:
-                hour = AvailableHour.objects.create(vendor=get_vendor(request), day=day, from_hour=from_hour, to_hour=to_hour, is_closed=is_closed)
-                if hour:
-                    day = AvailableHour.objects.get(id=hour.id)
-                    if day.is_closed:
-                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(), 'is_closed': 'Closed'}
-                    else:
-                        response = {'status': 'success', 'id': hour.id, 'day': day.get_day_display(), 'from_hour': hour.from_hour, 'to_hour': hour.to_hour}
-                                                
+            vendor = get_vendor(request)
+
+            # Check if the day is already marked as closed
+            if AvailableHour.objects.filter(vendor=vendor, day=day, is_closed=True).exists():
+                return JsonResponse({
+                    'status': 'failure', 
+                    'message': f'This day is already marked as closed. Remove the prior setting and try again.'
+                })
+
+            if is_closed == 'True':
+                # Remove existing hours for the day
+                AvailableHour.objects.filter(vendor=vendor, day=day, is_closed=False).delete()
+
+                # Handle the case when the day is closed
+                try:
+                    hour = AvailableHour.objects.create(vendor=vendor, day=day, is_closed=True)
+                    response = {'status': 'success', 'id': hour.id, 'day': hour.get_day_display(), 'is_closed': 'Closed'}
+                except IntegrityError as e:
+                    response = {'status': 'failure', 'message': f'Day {day} already marked as closed.', 'error': str(e)}
                 
                 return JsonResponse(response)
-            except IntegrityError as e:
-                response = {'status':'failure', 'message': f'{from_hour} - {to_hour} already exists for this day', 'error': str(e)}
-                return JsonResponse(response)
+            else:
+                # Proceed to check time slots if the day is not closed
+                new_from_time = datetime.strptime(from_hour, "%I:%M %p").time()
+                new_to_time = datetime.strptime(to_hour, "%I:%M %p").time()
+
+                # Get existing hours for the specified day
+                existing_hours = AvailableHour.objects.filter(vendor=vendor, day=day)
+
+                # Create an overlap query that checks various overlap conditions
+                overlap_query = (
+                    Q(from_hour__lt=new_to_time, to_hour__gt=new_from_time) |  # New starts before existing ends
+                    Q(from_hour__lt=new_from_time, to_hour__lt=new_to_time, to_hour__gt=new_from_time) | # New is encompassed by existing
+                    Q(from_hour__lte=new_from_time, to_hour__gte=new_from_time) |  # New starts during existing
+                    Q(from_hour__lte=new_to_time, to_hour__gte=new_to_time) |  # New ends during existing
+                    Q(from_hour__gte=new_from_time, to_hour__lte=new_to_time)   # Existing completely within new
+                )
+                # If there are overlapping hours, return a failure response
+                if existing_hours.filter(overlap_query).exists():
+                    response = {
+                        'status': 'failure', 
+                        'message': f'{from_hour} - {to_hour} overlaps with an existing slot on this day.'
+                    }
+                    return JsonResponse(response)
+
+                # Now we can safely create a new AvailableHour entry
+                try:
+                    hour = AvailableHour.objects.create(
+                        vendor=vendor,
+                        day=day,
+                        from_hour=from_hour,
+                        to_hour=to_hour,
+                        is_closed=is_closed
+                    )
+                    if hour:
+                        day_instance = AvailableHour.objects.get(id=hour.id)
+                        response = {
+                            'status': 'success',
+                            'id': hour.id,
+                            'day': day_instance.get_day_display(),
+                            'from_hour': hour.from_hour,
+                            'to_hour': hour.to_hour
+                        }
+                    
+                    return JsonResponse(response)
+                except IntegrityError as e:
+                    response = {
+                        'status':'failure',
+                        'message': f'{from_hour} - {to_hour} already exists for this day',
+                        'error': str(e)
+                    }
+                    return JsonResponse(response)
         else:
-            HttpResponse('invalid request')
+            return HttpResponse({'status': 'failure', 'message': 'invalid request'})
+
+
 
 
 def remove_available_hour(request, pk=None):

@@ -86,13 +86,13 @@
                     <div class="filter-wrapper">
                         <div class="categories-menu">
                             <h6><i class="icon-restaurant_menu"></i>Categories</h6>
-                            <ul class="menu-list">
+                            <div id="list-example" class="list-group ">
                                 
                                 {% for category in categories %}
-                                <li class="active"><a href="#" class="menu-category-link"> {{ category }} </a></li>                                
+                                <a class="list-group-item list-group-item-action menu-category-link border-0" href="#menu-category-{{ forloop.counter }}">{{ category }}</a>                               
                                 {% endfor %}
                                     
-                            </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -106,12 +106,12 @@
                             <div id="home" class="tab-pane in active">
                                 <div class="menu-itam-holder">
                                     
-                                    <div id="menu-item-list-6272" class="menu-itam-list">
+                                    <div id="menu-item-list-6272 " data-bs-spy="scroll" data-bs-target="#list-example" data-bs-smooth-scroll="true" tabindex="0" class="menu-itam-list">
                                         
                                         
                                         {% for category in categories %}
                                                                                         
-                                        <div class="element-title" id="menu-category-2">
+                                        <div class="element-title" id="menu-category-{{forloop.counter}}">
                                             <h5 class="text-color">{{ category }}</h5>
                                             <span>{{ category.description }}</span>
                                         </div>
